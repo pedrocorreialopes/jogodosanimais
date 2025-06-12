@@ -1,0 +1,781 @@
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Categorização para Crianças</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Comic Neue', cursive;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        .draggable {
+            cursor: grab;
+            transition: transform 0.2s;
+        }
+        .draggable:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+        }
+        .animal-container {
+            touch-action: none;
+        }
+        .bucket {
+            transition: all 0.3s;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        .bucket.highlight {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+        }
+        .correct-answer {
+            animation: correctPulse 0.6s;
+        }
+        @keyframes correctPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .incorrect-answer {
+            animation: incorrectShake 0.5s;
+        }
+        @keyframes incorrectShake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
+        }
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            opacity: 0;
+        }
+        .bucket-top {
+            height: 20px;
+            border-radius: 20px 20px 0 0;
+        }
+        .bucket-body {
+            min-height: 180px;
+            border-radius: 0 0 20px 20px;
+            border-width: 0 8px 8px 8px;
+            border-style: solid;
+        }
+        .star {
+            display: inline-block;
+            margin: 0 2px;
+            font-size: 24px;
+            color: #FFD700;
+            text-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+        .star.empty {
+            color: #ccc;
+        }
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: float 30s infinite linear;
+            opacity: 0.8;
+            z-index: -1;
+        }
+        @keyframes float {
+            0% { transform: translateX(-100px); }
+            100% { transform: translateX(calc(100vw + 100px)); }
+        }
+        .character {
+            position: absolute;
+            bottom: 10px;
+            width: 100px;
+            height: 100px;
+            z-index: 10;
+            transition: all 0.5s;
+        }
+        .character-speech {
+            position: absolute;
+            background: white;
+            border-radius: 20px;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            max-width: 200px;
+            z-index: 11;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+        .character-speech:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 20px;
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: white transparent;
+        }
+        .level-btn {
+            transition: all 0.3s;
+        }
+        .level-btn.active {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-400 to-purple-500 min-h-screen p-4 md:p-8 relative overflow-x-hidden">
+    <!-- Nuvens decorativas -->
+    <div class="cloud" style="width: 100px; height: 60px; top: 10%; animation-duration: 60s;"></div>
+    <div class="cloud" style="width: 150px; height: 90px; top: 20%; animation-duration: 80s; animation-delay: 10s;"></div>
+    <div class="cloud" style="width: 80px; height: 50px; top: 15%; animation-duration: 70s; animation-delay: 5s;"></div>
+    
+    <!-- Personagem -->
+    <div id="character" class="character left-5">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="45" fill="#FFD579" stroke="#FF9D00" stroke-width="2"/>
+            <circle cx="35" cy="40" r="5" fill="#333"/>
+            <circle cx="65" cy="40" r="5" fill="#333"/>
+            <path d="M 35 65 Q 50 80 65 65" fill="none" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+    </div>
+    <div id="character-speech" class="character-speech" style="left: 120px; bottom: 80px;">
+        Arraste os animais para os baldes corretos!
+    </div>
+
+    <div class="max-w-5xl mx-auto">
+        <!-- Cabeçalho -->
+        <header class="text-center mb-6">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-2 drop-shadow-lg">Jogo dos Animais</h1>
+            <p class="text-xl text-white drop-shadow">Arraste cada animal para o balde correto!</p>
+        </header>
+
+        <!-- Seleção de nível -->
+        <div class="mb-6 bg-white bg-opacity-90 rounded-2xl p-4 shadow-lg border-4 border-yellow-300">
+            <h2 class="text-xl font-bold text-purple-800 mb-3 text-center">Escolha o Nível:</h2>
+            <div class="flex justify-center gap-4">
+                <button id="level-easy" class="level-btn active bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full shadow-md transition-all">
+                    Fácil
+                </button>
+                <button id="level-medium" class="level-btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-6 rounded-full shadow-md transition-all">
+                    Médio
+                </button>
+                <button id="level-hard" class="level-btn bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-full shadow-md transition-all">
+                    Difícil
+                </button>
+            </div>
+        </div>
+
+        <!-- Progresso e Estrelas -->
+        <div class="mb-6 bg-white bg-opacity-90 rounded-2xl p-4 shadow-lg border-4 border-yellow-300">
+            <div class="flex justify-between items-center mb-2">
+                <span class="font-bold text-purple-800">Progresso:</span>
+                <div id="stars" class="flex">
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                </div>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-6 border-2 border-gray-300">
+                <div id="progress-bar" class="bg-gradient-to-r from-purple-500 to-pink-500 h-full rounded-full transition-all duration-500 flex items-center justify-center" style="width: 0%">
+                    <span id="progress-text" class="text-white text-sm font-bold">0/6</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Área do jogo -->
+        <div id="buckets-container" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Baldes de categorias -->
+            <div class="flex flex-col">
+                <div id="mammals" class="bucket">
+                    <div class="bucket-top bg-red-500"></div>
+                    <div class="bucket-body bg-red-100 border-red-500 p-4 flex flex-col">
+                        <h2 class="text-xl font-bold text-red-800 mb-3 text-center pb-2 border-b-2 border-red-200">Mamíferos</h2>
+                        <div class="flex-grow flex flex-wrap justify-center content-start gap-3 pt-2 drop-zone"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex flex-col">
+                <div id="reptiles" class="bucket">
+                    <div class="bucket-top bg-green-500"></div>
+                    <div class="bucket-body bg-green-100 border-green-500 p-4 flex flex-col">
+                        <h2 class="text-xl font-bold text-green-800 mb-3 text-center pb-2 border-b-2 border-green-200">Répteis</h2>
+                        <div class="flex-grow flex flex-wrap justify-center content-start gap-3 pt-2 drop-zone"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex flex-col">
+                <div id="amphibians" class="bucket">
+                    <div class="bucket-top bg-blue-500"></div>
+                    <div class="bucket-body bg-blue-100 border-blue-500 p-4 flex flex-col">
+                        <h2 class="text-xl font-bold text-blue-800 mb-3 text-center pb-2 border-b-2 border-blue-200">Anfíbios</h2>
+                        <div class="flex-grow flex flex-wrap justify-center content-start gap-3 pt-2 drop-zone"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Animais para arrastar -->
+        <div class="bg-white bg-opacity-90 rounded-2xl p-6 shadow-lg mb-6 border-4 border-yellow-300">
+            <h2 class="text-2xl font-bold text-purple-800 mb-4 text-center">Animais</h2>
+            <div id="animals-container" class="flex flex-wrap justify-center gap-4">
+                <!-- Os animais serão inseridos aqui pelo JavaScript -->
+            </div>
+        </div>
+
+        <!-- Feedback -->
+        <div id="feedback" class="hidden text-center p-4 rounded-2xl mb-6 transition-all duration-300 border-4"></div>
+
+        <!-- Botão de reiniciar -->
+        <div class="text-center">
+            <button id="restart-btn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all text-xl">
+                Reiniciar Jogo
+            </button>
+        </div>
+
+        <!-- Modal de conclusão -->
+        <div id="completion-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-3xl p-8 max-w-md mx-4 shadow-2xl transform transition-all border-8 border-yellow-300">
+                <div class="text-center">
+                    <div class="inline-block p-4 rounded-full bg-yellow-100 mb-4 border-4 border-yellow-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <h3 class="text-3xl font-bold text-purple-800 mb-2">Parabéns!</h3>
+                    <p class="text-xl text-gray-600 mb-4">Você completou o nível com sucesso!</p>
+                    <div id="modal-stars" class="flex justify-center mb-6">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                    </div>
+                    <div class="flex justify-center gap-4">
+                        <button id="next-level-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-all">
+                            Próximo Nível
+                        </button>
+                        <button id="play-again-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-all">
+                            Jogar Novamente
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Dados dos níveis
+            const levels = {
+                easy: {
+                    animals: [
+                        { id: 'cachorro', name: 'Cachorro', emoji: '🐕', category: 'mammals' },
+                        { id: 'gato', name: 'Gato', emoji: '🐈', category: 'mammals' },
+                        { id: 'cobra', name: 'Cobra', emoji: '🐍', category: 'reptiles' },
+                        { id: 'tartaruga', name: 'Tartaruga', emoji: '🐢', category: 'reptiles' },
+                        { id: 'sapo', name: 'Sapo', emoji: '🐸', category: 'amphibians' },
+                        { id: 'perereca', name: 'Perereca', emoji: '🐸', category: 'amphibians' }
+                    ]
+                },
+                medium: {
+                    animals: [
+                        { id: 'elefante', name: 'Elefante', emoji: '🐘', category: 'mammals' },
+                        { id: 'leao', name: 'Leão', emoji: '🦁', category: 'mammals' },
+                        { id: 'macaco', name: 'Macaco', emoji: '🐵', category: 'mammals' },
+                        { id: 'lagarto', name: 'Lagarto', emoji: '🦎', category: 'reptiles' },
+                        { id: 'crocodilo', name: 'Crocodilo', emoji: '🐊', category: 'reptiles' },
+                        { id: 'cobra_coral', name: 'Cobra Coral', emoji: '🐍', category: 'reptiles' },
+                        { id: 'salamandra', name: 'Salamandra', emoji: '🦎', category: 'amphibians' },
+                        { id: 'sapo_cururu', name: 'Sapo Cururu', emoji: '🐸', category: 'amphibians' },
+                        { id: 'axolote', name: 'Axolote', emoji: '⚪', category: 'amphibians' }
+                    ]
+                },
+                hard: {
+                    animals: [
+                        { id: 'ornitorrinco', name: 'Ornitorrinco', emoji: '🦆', category: 'mammals' },
+                        { id: 'baleia', name: 'Baleia', emoji: '🐋', category: 'mammals' },
+                        { id: 'morcego', name: 'Morcego', emoji: '🦇', category: 'mammals' },
+                        { id: 'pinguim', name: 'Pinguim', emoji: '🐧', category: 'birds' },
+                        { id: 'iguana', name: 'Iguana', emoji: '🦎', category: 'reptiles' },
+                        { id: 'camaleao', name: 'Camaleão', emoji: '🦎', category: 'reptiles' },
+                        { id: 'tartaruga_mar', name: 'Tartaruga Marinha', emoji: '🐢', category: 'reptiles' },
+                        { id: 'cecilia', name: 'Cecília', emoji: '🪱', category: 'amphibians' },
+                        { id: 'tritao', name: 'Tritão', emoji: '🦎', category: 'amphibians' },
+                        { id: 'ra_touro', name: 'Rã-Touro', emoji: '🐸', category: 'amphibians' },
+                        { id: 'aguia', name: 'Águia', emoji: '🦅', category: 'birds' },
+                        { id: 'papagaio', name: 'Papagaio', emoji: '🦜', category: 'birds' }
+                    ]
+                }
+            };
+
+            // Elementos do DOM
+            const animalsContainer = document.getElementById('animals-container');
+            const bucketsContainer = document.getElementById('buckets-container');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const feedbackElement = document.getElementById('feedback');
+            const restartBtn = document.getElementById('restart-btn');
+            const completionModal = document.getElementById('completion-modal');
+            const playAgainBtn = document.getElementById('play-again-btn');
+            const nextLevelBtn = document.getElementById('next-level-btn');
+            const levelButtons = document.querySelectorAll('.level-btn');
+            const stars = document.getElementById('stars').children;
+            const modalStars = document.getElementById('modal-stars').children;
+            const character = document.getElementById('character');
+            const characterSpeech = document.getElementById('character-speech');
+
+            // Estado do jogo
+            let currentLevel = 'easy';
+            let correctAnswers = 0;
+            let totalAnimals = 0;
+            let mistakes = 0;
+            let draggedElement = null;
+            
+            // Inicializar jogo
+            initLevel(currentLevel);
+            
+            // Mostrar fala do personagem
+            setTimeout(() => {
+                characterSpeech.style.opacity = '1';
+                setTimeout(() => {
+                    characterSpeech.style.opacity = '0';
+                }, 5000);
+            }, 1000);
+
+            // Configurar eventos de botões de nível
+            levelButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remover classe ativa de todos os botões
+                    levelButtons.forEach(btn => btn.classList.remove('active'));
+                    // Adicionar classe ativa ao botão clicado
+                    this.classList.add('active');
+                    
+                    // Definir nível atual
+                    currentLevel = this.id.split('-')[1];
+                    
+                    // Inicializar nível
+                    initLevel(currentLevel);
+                    
+                    // Mostrar mensagem do personagem
+                    characterSpeech.textContent = `Nível ${currentLevel === 'easy' ? 'Fácil' : currentLevel === 'medium' ? 'Médio' : 'Difícil'} selecionado!`;
+                    characterSpeech.style.opacity = '1';
+                    setTimeout(() => {
+                        characterSpeech.style.opacity = '0';
+                    }, 3000);
+                });
+            });
+
+            // Inicializar nível
+            function initLevel(level) {
+                // Limpar baldes
+                document.querySelectorAll('.drop-zone').forEach(zone => {
+                    zone.innerHTML = '';
+                });
+                
+                // Limpar contêiner de animais
+                animalsContainer.innerHTML = '';
+                
+                // Embaralhar animais
+                const shuffledAnimals = [...levels[level].animals].sort(() => Math.random() - 0.5);
+                
+                // Criar elementos de animais
+                shuffledAnimals.forEach(animal => {
+                    const animalElement = document.createElement('div');
+                    animalElement.id = animal.id;
+                    animalElement.className = 'draggable animal-container bg-white rounded-xl p-3 shadow-md hover:shadow-lg transition-all cursor-grab border-4 border-yellow-300';
+                    animalElement.setAttribute('draggable', 'true');
+                    animalElement.setAttribute('data-category', animal.category);
+                    animalElement.innerHTML = `
+                        <div class="flex flex-col items-center">
+                            <span class="text-4xl mb-1">${animal.emoji}</span>
+                            <span class="font-bold text-purple-800">${animal.name}</span>
+                        </div>
+                    `;
+                    animalsContainer.appendChild(animalElement);
+
+                    // Eventos de arrastar
+                    animalElement.addEventListener('dragstart', dragStart);
+                    animalElement.addEventListener('touchstart', touchStart, {passive: false});
+                });
+                
+                // Atualizar estado do jogo
+                correctAnswers = 0;
+                totalAnimals = shuffledAnimals.length;
+                mistakes = 0;
+                
+                // Atualizar progresso
+                updateProgress();
+                updateStars();
+                
+                // Configurar baldes para o nível atual
+                setupBuckets(level);
+            }
+
+            // Configurar baldes para o nível atual
+            function setupBuckets(level) {
+                // Remover categoria de aves se existir
+                const birdsContainer = document.getElementById('birds');
+                if (birdsContainer) {
+                    birdsContainer.parentElement.remove();
+                }
+                
+                // Adicionar categoria de aves para o nível difícil
+                if (level === 'hard' && !document.getElementById('birds')) {
+                    const birdsContainer = document.createElement('div');
+                    birdsContainer.className = 'flex flex-col';
+                    birdsContainer.innerHTML = `
+                        <div id="birds" class="bucket">
+                            <div class="bucket-top bg-yellow-500"></div>
+                            <div class="bucket-body bg-yellow-100 border-yellow-500 p-4 flex flex-col">
+                                <h2 class="text-xl font-bold text-yellow-800 mb-3 text-center pb-2 border-b-2 border-yellow-200">Aves</h2>
+                                <div class="flex-grow flex flex-wrap justify-center content-start gap-3 pt-2 drop-zone"></div>
+                            </div>
+                        </div>
+                    `;
+                    bucketsContainer.appendChild(birdsContainer);
+                }
+                
+                // Adicionar eventos a todos os baldes
+                document.querySelectorAll('.bucket').forEach(bucket => {
+                    bucket.addEventListener('dragover', dragOver);
+                    bucket.addEventListener('dragenter', dragEnter);
+                    bucket.addEventListener('dragleave', dragLeave);
+                    bucket.addEventListener('drop', drop);
+                    bucket.addEventListener('touchend', touchEnd);
+                });
+            }
+
+            // Funções de arrastar e soltar
+            function dragStart(e) {
+                draggedElement = this;
+                setTimeout(() => this.classList.add('opacity-50'), 0);
+            }
+
+            function touchStart(e) {
+                e.preventDefault();
+                draggedElement = this;
+                this.classList.add('opacity-50');
+                
+                const touch = e.targetTouches[0];
+                const offsetX = touch.clientX - this.getBoundingClientRect().left;
+                const offsetY = touch.clientY - this.getBoundingClientRect().top;
+                
+                this.style.position = 'fixed';
+                this.style.zIndex = 1000;
+                
+                function moveElement(x, y) {
+                    draggedElement.style.left = `${x - offsetX}px`;
+                    draggedElement.style.top = `${y - offsetY}px`;
+                }
+                
+                function touchMove(e) {
+                    e.preventDefault();
+                    const touch = e.targetTouches[0];
+                    moveElement(touch.clientX, touch.clientY);
+                    
+                    // Verificar se está sobre um balde
+                    document.querySelectorAll('.bucket').forEach(bucket => {
+                        const rect = bucket.getBoundingClientRect();
+                        if (
+                            touch.clientX > rect.left &&
+                            touch.clientX < rect.right &&
+                            touch.clientY > rect.top &&
+                            touch.clientY < rect.bottom
+                        ) {
+                            bucket.classList.add('highlight');
+                        } else {
+                            bucket.classList.remove('highlight');
+                        }
+                    });
+                }
+                
+                document.addEventListener('touchmove', touchMove, { passive: false });
+                document.addEventListener('touchend', function cleanUp() {
+                    document.removeEventListener('touchmove', touchMove);
+                    document.removeEventListener('touchend', cleanUp);
+                });
+            }
+
+            function dragOver(e) {
+                e.preventDefault();
+            }
+
+            function dragEnter(e) {
+                e.preventDefault();
+                this.classList.add('highlight');
+            }
+
+            function dragLeave() {
+                this.classList.remove('highlight');
+            }
+
+            function drop(e) {
+                e.preventDefault();
+                this.classList.remove('highlight');
+                
+                if (draggedElement) {
+                    const animalCategory = draggedElement.getAttribute('data-category');
+                    const bucketId = this.id;
+                    
+                    checkAnswer(animalCategory, bucketId, draggedElement, this);
+                }
+            }
+
+            function touchEnd(e) {
+                if (!draggedElement) return;
+                
+                document.querySelectorAll('.bucket').forEach(bucket => bucket.classList.remove('highlight'));
+                
+                // Verificar se o elemento está sobre este balde
+                const touch = e.changedTouches[0];
+                const rect = this.getBoundingClientRect();
+                
+                if (
+                    touch.clientX > rect.left &&
+                    touch.clientX < rect.right &&
+                    touch.clientY > rect.top &&
+                    touch.clientY < rect.bottom
+                ) {
+                    const animalCategory = draggedElement.getAttribute('data-category');
+                    const bucketId = this.id;
+                    
+                    // Restaurar o estilo do elemento arrastado
+                    draggedElement.style.position = '';
+                    draggedElement.style.left = '';
+                    draggedElement.style.top = '';
+                    draggedElement.style.zIndex = '';
+                    draggedElement.classList.remove('opacity-50');
+                    
+                    checkAnswer(animalCategory, bucketId, draggedElement, this);
+                } else {
+                    // Retornar o elemento para sua posição original
+                    draggedElement.style.position = '';
+                    draggedElement.style.left = '';
+                    draggedElement.style.top = '';
+                    draggedElement.style.zIndex = '';
+                    draggedElement.classList.remove('opacity-50');
+                }
+                
+                draggedElement = null;
+            }
+
+            // Verificar resposta
+            function checkAnswer(animalCategory, bucketId, animalElement, bucketElement) {
+                if (animalCategory === bucketId) {
+                    // Resposta correta
+                    correctAnswers++;
+                    updateProgress();
+                    updateStars();
+                    showFeedback(true);
+                    
+                    // Mover o animal para o balde
+                    if (animalElement.parentNode) {
+                        animalElement.parentNode.removeChild(animalElement);
+                    }
+                    
+                    animalElement.classList.remove('draggable');
+                    animalElement.removeAttribute('draggable');
+                    animalElement.classList.add('correct-answer');
+                    animalElement.classList.remove('opacity-50');
+                    
+                    // Encontrar a zona de soltar dentro do balde
+                    const dropZone = bucketElement.querySelector('.drop-zone');
+                    if (dropZone) {
+                        dropZone.appendChild(animalElement);
+                    }
+                    
+                    // Efeito de confete para respostas corretas
+                    createConfetti(animalElement);
+                    
+                    // Reação do personagem
+                    showCharacterReaction(true);
+                    
+                    // Verificar se o jogo foi concluído
+                    if (correctAnswers === totalAnimals) {
+                        setTimeout(() => {
+                            // Atualizar estrelas no modal
+                            for (let i = 0; i < 3; i++) {
+                                if (i < (3 - Math.min(2, Math.floor(mistakes / 2)))) {
+                                    modalStars[i].classList.remove('empty');
+                                } else {
+                                    modalStars[i].classList.add('empty');
+                                }
+                            }
+                            
+                            completionModal.classList.remove('hidden');
+                        }, 1000);
+                    }
+                } else {
+                    // Resposta incorreta
+                    mistakes++;
+                    updateStars();
+                    showFeedback(false);
+                    animalElement.classList.remove('opacity-50');
+                    animalElement.classList.add('incorrect-answer');
+                    
+                    // Reação do personagem
+                    showCharacterReaction(false);
+                    
+                    setTimeout(() => {
+                        animalElement.classList.remove('incorrect-answer');
+                    }, 500);
+                }
+                
+                draggedElement = null;
+            }
+
+            // Atualizar barra de progresso
+            function updateProgress() {
+                const percentage = (correctAnswers / totalAnimals) * 100;
+                progressBar.style.width = `${percentage}%`;
+                progressText.textContent = `${correctAnswers}/${totalAnimals}`;
+            }
+            
+            // Atualizar estrelas
+            function updateStars() {
+                // Calcular número de estrelas (máximo 3, perde 1 estrela a cada 2 erros)
+                const starCount = 3 - Math.min(3, Math.floor(mistakes / 2));
+                
+                // Atualizar exibição das estrelas
+                for (let i = 0; i < 3; i++) {
+                    if (i < starCount) {
+                        stars[i].classList.remove('empty');
+                    } else {
+                        stars[i].classList.add('empty');
+                    }
+                }
+            }
+
+            // Mostrar feedback
+            function showFeedback(isCorrect) {
+                feedbackElement.classList.remove('hidden', 'bg-green-100', 'bg-red-100', 'border-green-300', 'border-red-300');
+                
+                if (isCorrect) {
+                    feedbackElement.classList.add('bg-green-100', 'border-green-300');
+                    feedbackElement.innerHTML = `
+                        <div class="flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span class="text-green-800 font-bold text-xl">Muito bem! Você acertou!</span>
+                        </div>
+                    `;
+                } else {
+                    feedbackElement.classList.add('bg-red-100', 'border-red-300');
+                    feedbackElement.innerHTML = `
+                        <div class="flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            <span class="text-red-800 font-bold text-xl">Ops! Tente novamente!</span>
+                        </div>
+                    `;
+                }
+                
+                feedbackElement.classList.remove('hidden');
+                setTimeout(() => {
+                    feedbackElement.classList.add('hidden');
+                }, 2000);
+            }
+            
+            // Mostrar reação do personagem
+            function showCharacterReaction(isCorrect) {
+                // Mover personagem
+                character.style.transform = isCorrect ? 'translateY(-20px)' : 'rotate(10deg)';
+                
+                // Mostrar fala
+                characterSpeech.textContent = isCorrect ? 
+                    ['Muito bem!', 'Parabéns!', 'Você é demais!'][Math.floor(Math.random() * 3)] : 
+                    ['Tente novamente!', 'Quase lá!', 'Não desista!'][Math.floor(Math.random() * 3)];
+                characterSpeech.style.opacity = '1';
+                
+                // Restaurar personagem
+                setTimeout(() => {
+                    character.style.transform = '';
+                    characterSpeech.style.opacity = '0';
+                }, 2000);
+            }
+
+            // Criar efeito de confete
+            function createConfetti(element) {
+                const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'];
+                const confettiCount = 30;
+                
+                const rect = element.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                
+                for (let i = 0; i < confettiCount; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    document.body.appendChild(confetti);
+                    
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.random() * 100 + 50;
+                    const duration = Math.random() * 1 + 1;
+                    const delay = Math.random() * 0.3;
+                    
+                    confetti.style.left = `${centerX}px`;
+                    confetti.style.top = `${centerY}px`;
+                    
+                    // Animação
+                    confetti.animate([
+                        { 
+                            transform: 'translate(-50%, -50%) scale(0) rotate(0deg)',
+                            opacity: 1
+                        },
+                        {
+                            transform: `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance - 50}px) scale(1) rotate(${Math.random() * 360}deg)`,
+                            opacity: 0
+                        }
+                    ], {
+                        duration: duration * 1000,
+                        delay: delay * 1000,
+                        easing: 'cubic-bezier(0.1, 0.8, 0.2, 1)',
+                        fill: 'forwards'
+                    });
+                    
+                    setTimeout(() => {
+                        if (document.body.contains(confetti)) {
+                            document.body.removeChild(confetti);
+                        }
+                    }, (duration + delay) * 1000);
+                }
+            }
+
+            // Reiniciar jogo
+            function restartGame() {
+                initLevel(currentLevel);
+                completionModal.classList.add('hidden');
+            }
+            
+            // Próximo nível
+            function nextLevel() {
+                if (currentLevel === 'easy') {
+                    currentLevel = 'medium';
+                    document.getElementById('level-medium').click();
+                } else if (currentLevel === 'medium') {
+                    currentLevel = 'hard';
+                    document.getElementById('level-hard').click();
+                } else {
+                    // Se já estiver no nível difícil, apenas reinicia
+                    restartGame();
+                }
+                
+                completionModal.classList.add('hidden');
+            }
+            
+            // Eventos de botões
+            restartBtn.addEventListener('click', restartGame);
+            playAgainBtn.addEventListener('click', restartGame);
+            nextLevelBtn.addEventListener('click', nextLevel);
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'94ebbc19e3bbf1d3',t:'MTc0OTc1NjMzMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
